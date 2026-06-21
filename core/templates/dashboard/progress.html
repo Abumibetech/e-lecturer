@@ -1,0 +1,181 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Progress — E-Lecturer{% endblock %}
+
+{% block extra_css %}
+.pg-wrap { padding: 40px 36px; }
+
+.pg-header { margin-bottom: 28px; animation: fadeUp 0.5s ease both; }
+.pg-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(0,245,212,0.08); border: 1px solid rgba(0,245,212,0.2);
+    color: #00f5d4; font-size: 11px; font-weight: 700;
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 14px;
+    letter-spacing: 0.07em; text-transform: uppercase;
+}
+.pg-header h1 { font-size: 30px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 6px; }
+.pg-header p { color: rgba(255,255,255,0.5); font-size: 14px; }
+
+/* ── SUMMARY STATS ── */
+.pg-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 36px; }
+.pg-stat {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px; padding: 22px; text-align: center;
+    transition: all 0.3s; animation: fadeUp 0.6s ease both; position: relative; overflow: hidden;
+}
+.pg-stat:hover { transform: translateY(-4px); border-color: rgba(0,245,212,0.25); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.pg-stat-ring {
+    width: 64px; height: 64px; margin: 0 auto 12px;
+    position: relative; display: flex; align-items: center; justify-content: center;
+}
+.pg-stat-ring svg { transform: rotate(-90deg); }
+.pg-stat-ring .ring-bg { stroke: rgba(255,255,255,0.07); }
+.pg-stat-ring .ring-fill { stroke: url(#ringGradient); stroke-linecap: round; transition: stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1); }
+.pg-stat-ring .ring-text { position: absolute; font-size: 15px; font-weight: 800; color: #00f5d4; }
+.pg-stat h2 { font-size: 24px; font-weight: 800; margin-bottom: 4px; background: linear-gradient(135deg, #00c2ff, #00f5d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.pg-stat p { font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+.pg-stat:nth-child(1) { animation-delay: 0.05s; } .pg-stat:nth-child(2) { animation-delay: 0.1s; } .pg-stat:nth-child(3) { animation-delay: 0.15s; }
+
+/* ── COURSE PROGRESS LIST ── */
+.pg-section-title { font-size: 17px; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+
+.pg-card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px; padding: 22px; margin-bottom: 14px;
+    transition: all 0.3s; animation: fadeUp 0.5s ease both; position: relative; overflow: hidden;
+}
+.pg-card::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+    background: linear-gradient(180deg, #00c2ff, #00f5d4);
+    transform: scaleY(0); transform-origin: top; transition: transform 0.4s ease;
+}
+.pg-card:hover { transform: translateX(4px); border-color: rgba(0,245,212,0.25); }
+.pg-card:hover::before { transform: scaleY(1); }
+
+.pg-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.pg-card-code { font-size: 11px; font-weight: 800; color: #00c2ff; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 4px; }
+.pg-card-title { font-size: 15px; font-weight: 700; color: #fff; }
+.pg-card-pct { font-size: 20px; font-weight: 800; background: linear-gradient(135deg, #00c2ff, #00f5d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; white-space: nowrap; }
+
+.pg-bar { height: 9px; background: rgba(255,255,255,0.06); border-radius: 10px; overflow: hidden; position: relative; }
+.pg-bar-fill {
+    height: 100%; border-radius: 10px; width: 0%;
+    background: linear-gradient(90deg, #00c2ff, #00f5d4);
+    transition: width 1.1s cubic-bezier(0.4,0,0.2,1);
+    position: relative;
+}
+.pg-bar-fill.complete { background: linear-gradient(90deg, #22c55e, #4ade80); }
+.pg-bar-fill::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: shimmer 2s infinite;
+}
+@keyframes shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+.pg-badge {
+    display: inline-flex; align-items: center; gap: 4px; margin-top: 12px;
+    font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px;
+}
+.pg-badge.done { background: rgba(34,197,94,0.12); color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+.pg-badge.active { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+
+.pg-card:nth-child(1) { animation-delay: 0.05s; } .pg-card:nth-child(2) { animation-delay: 0.1s; }
+.pg-card:nth-child(3) { animation-delay: 0.15s; } .pg-card:nth-child(4) { animation-delay: 0.2s; }
+
+/* ── EMPTY ── */
+.pg-empty {
+    background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 22px; padding: 60px 30px; text-align: center; animation: fadeUp 0.5s ease both;
+}
+.pg-empty-icon { font-size: 48px; margin-bottom: 16px; animation: floatIcon 3s ease-in-out infinite; }
+@keyframes floatIcon { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.pg-empty h3 { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.pg-empty p { color: rgba(255,255,255,0.4); font-size: 14px; }
+
+@media (max-width: 768px) {
+    .pg-wrap { padding: 24px 20px; }
+}
+{% endblock %}
+
+{% block content %}
+<div class="pg-wrap">
+
+    <div class="pg-header">
+        <div class="pg-eyebrow">📊 Your Journey</div>
+        <h1>Progress</h1>
+        <p>Track how far you've come across all your courses</p>
+    </div>
+
+    <!-- ── SUMMARY STATS ── -->
+    <div class="pg-stats">
+        <div class="pg-stat">
+            <h2>{{ enrollments|length }}</h2>
+            <p>Total Courses</p>
+        </div>
+        <div class="pg-stat">
+            <h2>{{ total_lessons_completed }}/{{ total_lessons }}</h2>
+            <p>Lessons Completed</p>
+        </div>
+        <div class="pg-stat">
+            <h2 id="overallPct">0%</h2>
+            <p>Overall Progress</p>
+        </div>
+    </div>
+
+    <div class="pg-section-title">📚 Course Breakdown</div>
+
+    {% if enrollments %}
+        {% for enrollment in enrollments %}
+        <div class="pg-card">
+            <div class="pg-card-top">
+                <div>
+                    <div class="pg-card-code">{{ enrollment.course.code }}</div>
+                    <div class="pg-card-title">{{ enrollment.course.title }}</div>
+                </div>
+                <div class="pg-card-pct">{{ enrollment.progress|floatformat:0 }}%</div>
+            </div>
+            <div class="pg-bar">
+                <div class="pg-bar-fill {% if enrollment.completed %}complete{% endif %}"
+                     data-width="{{ enrollment.progress|floatformat:0 }}"></div>
+            </div>
+            {% if enrollment.completed %}
+                <span class="pg-badge done">✓ Completed</span>
+            {% else %}
+                <span class="pg-badge active">⚡ In Progress</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="pg-empty">
+            <div class="pg-empty-icon">📈</div>
+            <h3>No progress data yet</h3>
+            <p>Enroll in a course and start learning to see your progress here.</p>
+        </div>
+    {% endif %}
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Animate all progress bars
+    const bars = document.querySelectorAll('.pg-bar-fill');
+    let total = 0;
+    bars.forEach(bar => {
+        const target = parseFloat(bar.getAttribute('data-width')) || 0;
+        total += target;
+        setTimeout(() => { bar.style.width = target + '%'; }, 150);
+    });
+
+    // Animate overall percentage counter
+    const overall = bars.length > 0 ? Math.round(total / bars.length) : 0;
+    const el = document.getElementById('overallPct');
+    let current = 0;
+    const step = Math.max(1, Math.round(overall / 40));
+    const interval = setInterval(() => {
+        current += step;
+        if (current >= overall) { current = overall; clearInterval(interval); }
+        el.textContent = current + '%';
+    }, 25);
+});
+</script>
+{% endblock %}

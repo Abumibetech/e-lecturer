@@ -1,0 +1,171 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+
+<style>
+.activity-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.activity-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); border: 1px solid #e5e7eb; }
+.activity-card .number { font-size: 32px; font-weight: 800; color: #1e293b; margin: 8px 0 4px; }
+.activity-card .label { font-size: 12px; color: #6b7280; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.activity-card .icon { font-size: 24px; }
+.table-wrap { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); border: 1px solid #e5e7eb; margin-bottom: 24px; }
+.table-wrap h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1e293b; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 10px 12px; border-bottom: 2px solid #e5e7eb; color: #6b7280; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+td { padding: 10px 12px; border-bottom: 1px solid #f1f5f9; color: #374151; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f8fafc; }
+.pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+.pill-green { background: #f0fdf4; color: #16a34a; }
+.pill-blue { background: #e0f2fe; color: #0369a1; }
+.pill-amber { background: #fffbeb; color: #d97706; }
+.pill-red { background: #fef2f2; color: #dc2626; }
+.progress-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.progress-bar-bg { width: 80px; height: 7px; background: #e5e7eb; border-radius: 10px; overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 10px; }
+</style>
+
+<h1 style="margin-bottom: 24px; font-size: 22px; font-weight: 800; color: #1e293b;">📊 Student Activity Dashboard</h1>
+
+<!-- SUMMARY STATS -->
+<div class="activity-grid">
+    <div class="activity-card">
+        <div class="icon">👥</div>
+        <div class="number">{{ total_students }}</div>
+        <div class="label">Total Students</div>
+    </div>
+    <div class="activity-card">
+        <div class="icon">📚</div>
+        <div class="number">{{ total_enrollments }}</div>
+        <div class="label">Total Enrollments</div>
+    </div>
+    <div class="activity-card">
+        <div class="icon">🏆</div>
+        <div class="number">{{ total_completions }}</div>
+        <div class="label">Courses Completed</div>
+    </div>
+    <div class="activity-card">
+        <div class="icon">✅</div>
+        <div class="number">{{ total_lessons_done }}</div>
+        <div class="label">Lessons Completed</div>
+    </div>
+    <div class="activity-card">
+        <div class="icon">📈</div>
+        <div class="number">{{ overall_avg }}%</div>
+        <div class="label">Overall Avg Progress</div>
+    </div>
+</div>
+
+<!-- TOP ACTIVE STUDENTS -->
+<div class="table-wrap">
+    <h2>🏅 Most Active Students</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Student</th>
+                <th>Email</th>
+                <th>Courses</th>
+                <th>Completed</th>
+                <th>Lessons Done</th>
+                <th>Avg Progress</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in top_students %}
+            <tr>
+                <td><strong>{{ forloop.counter }}</strong></td>
+                <td><strong>{{ s.name }}</strong></td>
+                <td style="color:#6b7280;">{{ s.email }}</td>
+                <td><span class="pill pill-blue">📚 {{ s.courses }}</span></td>
+                <td><span class="pill pill-green">🏆 {{ s.completed }}</span></td>
+                <td><span class="pill pill-amber">✅ {{ s.lessons }}</span></td>
+                <td>
+                    <div class="progress-bar-wrap">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width:{{ s.avg_progress }}%;background:{% if s.avg_progress >= 70 %}#16a34a{% elif s.avg_progress >= 30 %}#d97706{% else %}#dc2626{% endif %};"></div>
+                        </div>
+                        <span style="font-size:12px;font-weight:700;">{{ s.avg_progress }}%</span>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:20px;">No student data yet</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- TOP COURSES -->
+<div class="table-wrap">
+    <h2>🔥 Most Popular Courses</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Course</th>
+                <th>Students</th>
+                <th>Completed</th>
+                <th>Avg Progress</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in top_courses %}
+            <tr>
+                <td><strong>{{ forloop.counter }}</strong></td>
+                <td>
+                    <strong>{{ c.code }}</strong><br>
+                    <span style="color:#6b7280;font-size:12px;">{{ c.title }}</span>
+                </td>
+                <td><span class="pill pill-blue">👥 {{ c.students }}</span></td>
+                <td><span class="pill pill-green">🏆 {{ c.completed }}</span></td>
+                <td>
+                    <div class="progress-bar-wrap">
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" style="width:{{ c.avg }}%;background:{% if c.avg >= 70 %}#16a34a{% elif c.avg >= 30 %}#d97706{% else %}#dc2626{% endif %};"></div>
+                        </div>
+                        <span style="font-size:12px;font-weight:700;">{{ c.avg }}%</span>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px;">No course data yet</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- RECENT ACTIVITY -->
+<div class="table-wrap">
+    <h2>🕐 Recent Lesson Activity</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Student</th>
+                <th>Lesson</th>
+                <th>Course</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lp in recent_activity %}
+            <tr>
+                <td><strong>{{ lp.student.user.first_name|default:lp.student.user.username }}</strong></td>
+                <td>{{ lp.lesson.title }}</td>
+                <td><span class="pill pill-blue">{{ lp.lesson.module.course.code }}</span></td>
+                <td>
+                    {% if lp.is_completed %}
+                    <span class="pill pill-green">✅ Completed</span>
+                    {% else %}
+                    <span class="pill" style="background:#f9fafb;color:#6b7280;">👁️ Viewed</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">No activity yet</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
+

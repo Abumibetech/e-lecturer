@@ -1,0 +1,554 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard — E-Lecturer{% endblock %}
+
+{% block extra_css %}
+
+/* ── PAGE SCROLL ── */
+.dash-page {
+    height: auto;
+    overflow-y: auto;
+    padding-bottom: 60px;
+}
+
+/* ── HERO ── */
+.hero {
+    padding: 48px 36px 32px;
+    animation: fadeUp 0.6s ease both;
+}
+.hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(0,245,212,0.08); border: 1px solid rgba(0,245,212,0.2);
+    color: #00f5d4; font-size: 11px; font-weight: 700;
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 16px;
+    letter-spacing: 0.07em; text-transform: uppercase;
+}
+.hero h1 {
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 900; line-height: 1.15;
+    letter-spacing: -0.6px; margin-bottom: 10px;
+}
+.hero h1 .name {
+    background: linear-gradient(135deg, #00c2ff, #00f5d4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.hero p {
+    color: rgba(255,255,255,0.5); font-size: clamp(13px, 2vw, 15px);
+    max-width: 500px; line-height: 1.7; margin-bottom: 24px;
+}
+.hero-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 24px; background: linear-gradient(135deg, #00c2ff, #00f5d4);
+    color: #0a0f1e; border-radius: 12px; text-decoration: none;
+    font-weight: 700; font-size: 14px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(0,245,212,0.25);
+}
+.hero-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,245,212,0.35); }
+
+/* ── STATS ── */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px; padding: 0 36px 32px;
+}
+.stat-card {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px; padding: 16px; display: flex; align-items: center;
+    gap: 12px; transition: all 0.3s; animation: fadeUp 0.7s ease both;
+}
+.stat-card:hover {
+    transform: translateY(-4px); border-color: rgba(0,245,212,0.25);
+    background: rgba(0,245,212,0.04); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.stat-icon {
+    width: 42px; height: 42px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px; flex-shrink: 0;
+}
+.si-1 { background: rgba(0,194,255,0.15); }
+.si-2 { background: rgba(0,245,212,0.15); }
+.si-3 { background: rgba(99,102,241,0.15); }
+.si-4 { background: rgba(245,158,11,0.15); }
+.stat-info h2 {
+    font-size: clamp(16px, 3vw, 22px); font-weight: 800; line-height: 1;
+    margin-bottom: 3px;
+    background: linear-gradient(135deg, #00c2ff, #00f5d4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.stat-info p {
+    font-size: 10px; color: rgba(255,255,255,0.4);
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em;
+}
+.stat-card:nth-child(1) { animation-delay: 0.05s; }
+.stat-card:nth-child(2) { animation-delay: 0.1s; }
+.stat-card:nth-child(3) { animation-delay: 0.15s; }
+.stat-card:nth-child(4) { animation-delay: 0.2s; }
+
+/* ── SECTION HEADERS ── */
+.section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 36px 14px; gap: 10px;
+}
+.section-header h2 {
+    font-size: clamp(14px, 2.5vw, 17px); font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+}
+.section-header a {
+    color: #00f5d4; text-decoration: none;
+    font-size: 13px; font-weight: 600; transition: opacity 0.2s;
+    white-space: nowrap;
+}
+.section-header a:hover { opacity: 0.7; }
+
+/* ── HORIZONTAL SCROLL ROW ── */
+.scroll-wrap {
+    position: relative;
+    margin-bottom: 8px;
+}
+.scroll-row {
+    display: flex;
+    overflow-x: auto;
+    gap: 14px;
+    padding: 4px 36px 16px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+.scroll-row::-webkit-scrollbar { height: 4px; }
+.scroll-row::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); border-radius: 4px; }
+.scroll-row::-webkit-scrollbar-thumb { background: rgba(0,245,212,0.35); border-radius: 4px; }
+.scroll-row::-webkit-scrollbar-thumb:hover { background: rgba(0,245,212,0.6); }
+
+.scroll-arrow {
+    position: absolute; top: 50%; transform: translateY(-60%);
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(0,245,212,0.15); border: 1px solid rgba(0,245,212,0.3);
+    color: #00f5d4; font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s; z-index: 10;
+    backdrop-filter: blur(8px);
+}
+.scroll-arrow:hover { background: rgba(0,245,212,0.3); transform: translateY(-60%) scale(1.1); }
+.scroll-arrow.left  { left: 6px; }
+.scroll-arrow.right { right: 6px; }
+
+.scroll-dots {
+    display: flex; justify-content: center; gap: 6px;
+    padding: 0 36px 24px;
+}
+.scroll-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(255,255,255,0.15); transition: all 0.3s; cursor: pointer;
+}
+.scroll-dot.active { background: #00f5d4; width: 18px; border-radius: 3px; }
+
+/* ── COURSE CARD ── */
+.course-card {
+    min-width: clamp(220px, 60vw, 265px);
+    max-width: clamp(220px, 60vw, 265px);
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px; overflow: hidden; transition: all 0.3s;
+    cursor: pointer; scroll-snap-align: start;
+    text-decoration: none; color: white; display: block;
+    animation: fadeUp 0.6s ease both; flex-shrink: 0;
+    position: relative;
+}
+.course-card:hover {
+    transform: translateY(-6px); border-color: rgba(0,245,212,0.3);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+.course-thumb { height: 130px; position: relative; overflow: hidden; }
+.course-thumb-bg {
+    width: 100%; height: 100%; display: flex;
+    align-items: center; justify-content: center;
+    font-size: 36px; position: relative;
+}
+.t1 { background: linear-gradient(135deg, #0f4c8a, #1e88e5); }
+.t2 { background: linear-gradient(135deg, #006064, #00acc1); }
+.t3 { background: linear-gradient(135deg, #1b5e20, #43a047); }
+.t4 { background: linear-gradient(135deg, #4a148c, #7b1fa2); }
+.t5 { background: linear-gradient(135deg, #880e4f, #e91e63); }
+.t6 { background: linear-gradient(135deg, #e65100, #ff8f00); }
+.thumb-shine {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+}
+.thumb-dots {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px);
+    background-size: 16px 16px;
+}
+.progress-strip { position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(0,0,0,0.3); }
+.progress-strip-fill { height: 100%; background: linear-gradient(90deg, #00c2ff, #00f5d4); transition: width 0.5s ease; }
+.course-body { padding: 13px; }
+.course-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 9px; border-radius: 20px; font-size: 10px;
+    font-weight: 700; margin-bottom: 7px; letter-spacing: 0.04em; text-transform: uppercase;
+}
+.badge-progress { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.2); }
+.badge-pick    { background: rgba(0,245,212,0.1);    color: #00f5d4; border: 1px solid rgba(0,245,212,0.2); }
+.course-code { font-size: 11px; font-weight: 700; color: #00c2ff; letter-spacing: 0.08em; margin-bottom: 3px; text-transform: uppercase; }
+.course-title {
+    font-size: 12px; font-weight: 600; color: #e2e8f0; line-height: 1.5; margin-bottom: 10px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 36px;
+}
+.course-footer { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+.course-meta { font-size: 11px; color: rgba(255,255,255,0.35); font-weight: 500; }
+
+/* The whole pick-card body is clickable → course detail page,
+   but the Enroll button itself is its own form/button that
+   submits directly without navigating to course_detail first. */
+.course-card-link { display: block; text-decoration: none; color: inherit; }
+.course-btn {
+    display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px;
+    background: linear-gradient(135deg, #00c2ff, #00f5d4);
+    border: none;
+    border-radius: 9px; font-size: 11px; font-weight: 700;
+    color: #0a0f1e; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+    cursor: pointer; font-family: inherit;
+}
+.course-card:hover .course-btn { box-shadow: 0 4px 14px rgba(0,245,212,0.35); transform: scale(1.04); }
+.enroll-form { display: inline-flex; }
+
+/* ── E-LECTURER BANNER ── */
+.elec-banner {
+    margin: 0 36px 32px;
+    background: linear-gradient(135deg, rgba(0,194,255,0.1), rgba(0,245,212,0.06));
+    border: 1px solid rgba(0,245,212,0.2); border-radius: 20px;
+    padding: 20px 24px; display: flex; align-items: center;
+    justify-content: space-between; gap: 16px; overflow: hidden;
+    animation: fadeUp 0.8s ease both; text-decoration: none;
+    color: white; transition: all 0.3s; flex-wrap: wrap; position: relative;
+}
+.elec-banner:hover {
+    border-color: rgba(0,245,212,0.4);
+    background: linear-gradient(135deg, rgba(0,194,255,0.15), rgba(0,245,212,0.1));
+    transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.elec-banner::before {
+    content: ''; position: absolute; top: -40px; right: -40px;
+    width: 160px; height: 160px; background: rgba(0,245,212,0.06); border-radius: 50%;
+}
+.elec-banner-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.elec-banner-icon {
+    width: 48px; height: 48px; flex-shrink: 0;
+    background: linear-gradient(135deg, #00c2ff, #00f5d4);
+    border-radius: 14px; display: flex; align-items: center;
+    justify-content: center; font-size: 22px;
+    box-shadow: 0 4px 16px rgba(0,245,212,0.3);
+}
+.elec-banner-text h3 { font-size: clamp(13px, 2vw, 15px); font-weight: 700; margin-bottom: 3px; }
+.elec-banner-text p { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5; max-width: 400px; }
+.elec-banner-btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px;
+    background: linear-gradient(135deg, #00c2ff, #00f5d4);
+    color: #0a0f1e; border-radius: 11px; font-size: 13px;
+    font-weight: 700; white-space: nowrap; flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(0,245,212,0.25); transition: all 0.2s;
+}
+.elec-banner:hover .elec-banner-btn { box-shadow: 0 6px 20px rgba(0,245,212,0.4); transform: scale(1.03); }
+
+/* ── REFRESH PICKS BUTTON ── */
+.refresh-picks-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600;
+    padding: 6px 12px; border-radius: 20px; cursor: pointer;
+    transition: all 0.2s; font-family: inherit;
+}
+.refresh-picks-btn:hover { background: rgba(0,245,212,0.1); color: #00f5d4; border-color: rgba(0,245,212,0.3); }
+.refresh-picks-btn.spinning svg { animation: spin 0.6s linear; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* ── EMPTY CARD ── */
+.empty-card {
+    display: flex; align-items: center; gap: 14px; padding: 22px;
+    background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 18px; min-width: 260px; color: rgba(255,255,255,0.35); font-size: 13px;
+}
+.empty-card .empty-icon { font-size: 30px; flex-shrink: 0; }
+.empty-card strong { display: block; color: rgba(255,255,255,0.55); font-weight: 600; margin-bottom: 3px; font-size: 14px; }
+
+/* ── TOAST ── */
+.toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,245,212,0.95); color: #0a0f1e;
+    padding: 12px 22px; border-radius: 12px; font-size: 13px; font-weight: 700;
+    z-index: 9999; display: none; max-width: 90vw; text-align: center;
+    backdrop-filter: blur(12px); animation: toastIn 0.3s ease;
+}
+.toast.err { background: rgba(239,68,68,0.95); color: white; }
+.toast.show { display: block; }
+@keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(12px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
+
+/* ══ RESPONSIVE ══ */
+@media (max-width: 900px) {
+    .hero { padding: 36px 24px 24px; }
+    .stats-grid { padding: 0 24px 24px; }
+    .section-header { padding: 0 24px 12px; }
+    .scroll-row { padding: 4px 24px 16px; }
+    .elec-banner { margin: 0 24px 24px; }
+    .scroll-arrow { display: none; }
+}
+@media (max-width: 640px) {
+    .hero { padding: 24px 16px 20px; }
+    .hero h1 { font-size: 22px; }
+    .hero p  { font-size: 13px; }
+    .hero-cta { padding: 11px 20px; font-size: 13px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; padding: 0 16px 20px; gap: 10px; }
+    .stat-card { padding: 14px; gap: 10px; }
+    .stat-icon { width: 36px; height: 36px; font-size: 16px; }
+    .stat-info h2 { font-size: 18px; }
+    .section-header { padding: 0 16px 10px; flex-wrap: wrap; }
+    .section-header h2 { font-size: 14px; }
+    .scroll-row { padding: 4px 16px 16px; gap: 12px; }
+    .scroll-dots { padding: 0 16px 18px; }
+    .course-card { min-width: 200px; max-width: 200px; }
+    .course-thumb { height: 110px; }
+    .course-thumb-bg { font-size: 28px; }
+    .elec-banner { margin: 0 16px 20px; padding: 16px; gap: 12px; }
+    .elec-banner-text p { display: none; }
+    .elec-banner-icon { width: 40px; height: 40px; font-size: 18px; }
+    .elec-banner-btn { padding: 9px 14px; font-size: 12px; }
+}
+@media (max-width: 400px) {
+    .hero h1 { font-size: 20px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat-card { padding: 12px 10px; }
+    .stat-info h2 { font-size: 16px; }
+    .course-card { min-width: 170px; max-width: 170px; }
+    .elec-banner-btn { width: 100%; justify-content: center; }
+}
+
+{% endblock %}
+
+{% block content %}
+<div class="dash-page">
+
+    <!-- ── HERO ── -->
+    <div class="hero">
+        {% if total_enrolled == 0 %}
+            <div class="hero-eyebrow">✨ Welcome Student</div>
+            <h1>Hello, <span class="name">{{ request.user.first_name }}!</span></h1>
+            <p>Your learning journey starts here. Browse courses, enroll, and start building your skills today.</p>
+            <a href="{% url 'explore' %}" class="hero-cta">🔍 Explore Courses</a>
+        {% else %}
+            <div class="hero-eyebrow">🔥 Keep the momentum going</div>
+            <h1>Welcome back, <span class="name">{{ request.user.first_name }}!</span></h1>
+            <p>You're on a great track. Continue your courses and keep levelling up your knowledge.</p>
+            <a href="{% url 'my_courses' %}" class="hero-cta">📚 Continue Learning</a>
+        {% endif %}
+    </div>
+
+    <!-- ── STATS ── -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon si-1">📚</div>
+            <div class="stat-info"><h2>{{ total_enrolled }}</h2><p>Enrolled</p></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon si-2">📈</div>
+            <div class="stat-info"><h2>{{ avg_progress }}%</h2><p>Avg Progress</p></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon si-3">⏱️</div>
+            <div class="stat-info"><h2>{{ total_hours }}h</h2><p>Hours Learned</p></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon si-4">🏆</div>
+            <div class="stat-info"><h2>{{ completed_courses }}</h2><p>Completed</p></div>
+        </div>
+    </div>
+
+    <!-- ── CONTINUE LEARNING ── -->
+    <div class="section-header">
+        <h2>⚡ Continue Learning</h2>
+        <a href="{% url 'my_courses' %}">View all →</a>
+    </div>
+
+    <div class="scroll-wrap">
+        <button class="scroll-arrow left"  onclick="scrollRow('row1', -1)">‹</button>
+        <button class="scroll-arrow right" onclick="scrollRow('row1',  1)">›</button>
+        <div class="scroll-row" id="row1">
+            {% for e in enrollments %}
+            {% if not e.completed %}
+            <a href="{% url 'course_player' e.course.id %}" class="course-card">
+                <div class="course-thumb">
+                    <div class="course-thumb-bg {% if forloop.counter == 1 %}t1{% elif forloop.counter == 2 %}t2{% elif forloop.counter == 3 %}t3{% elif forloop.counter == 4 %}t4{% elif forloop.counter == 5 %}t5{% else %}t6{% endif %}">
+                        <div class="thumb-dots"></div>
+                        <div class="thumb-shine"></div>
+                        📖
+                    </div>
+                    <div class="progress-strip">
+                        <div class="progress-strip-fill" style="width:{{ e.progress|floatformat:0 }}%;"></div>
+                    </div>
+                </div>
+                <div class="course-body">
+                    <div class="course-badge badge-progress">⚡ In Progress</div>
+                    <div class="course-code">{{ e.course.code }}</div>
+                    <div class="course-title">{{ e.course.title }}</div>
+                    <div class="course-footer">
+                        <span class="course-meta">{{ e.progress|floatformat:0 }}% done</span>
+                        <span class="course-btn">▶ Continue</span>
+                    </div>
+                </div>
+            </a>
+            {% endif %}
+            {% empty %}
+            <div class="empty-card">
+                <span class="empty-icon">🚀</span>
+                <div>
+                    <strong>Nothing in progress yet</strong>
+                    Enroll in a course and start learning!
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="scroll-dots" id="dots1"></div>
+
+    <!-- ── E-LECTURER BANNER ── -->
+    <a href="{% url 'ai_lecturer' %}" class="elec-banner">
+        <div class="elec-banner-left">
+            <div class="elec-banner-icon">🤖</div>
+            <div class="elec-banner-text">
+                <h3>Ask E-Lecturer — Your Smart Study Companion 💡</h3>
+                <p>Stuck on a topic? Chat with E-Lecturer and get instant explanations, summaries, and answers — available 24/7 just for you.</p>
+            </div>
+        </div>
+        <div class="elec-banner-btn">💬 Start Chatting →</div>
+    </a>
+
+    <!-- ── RECOMMENDED ── -->
+    <div class="section-header">
+        <h2>🎯 E-Lecturer Picks For You</h2>
+        <button class="refresh-picks-btn" id="refreshPicksBtn" onclick="refreshPicks()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"/>
+                <polyline points="1 20 1 14 7 14"/>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+            </svg>
+            Refresh
+        </button>
+    </div>
+
+    <div class="scroll-wrap">
+        <button class="scroll-arrow left"  onclick="scrollRow('row2', -1)">‹</button>
+        <button class="scroll-arrow right" onclick="scrollRow('row2',  1)">›</button>
+        <div class="scroll-row" id="row2" style="padding-bottom: 16px;">
+            {% for course in recommended_courses %}
+            <div class="course-card">
+                <a href="{% url 'course_detail' course.id %}" class="course-card-link">
+                    <div class="course-thumb">
+                        <div class="course-thumb-bg {% if forloop.counter == 1 %}t2{% elif forloop.counter == 2 %}t4{% elif forloop.counter == 3 %}t1{% elif forloop.counter == 4 %}t5{% elif forloop.counter == 5 %}t3{% else %}t6{% endif %}">
+                            <div class="thumb-dots"></div>
+                            <div class="thumb-shine"></div>
+                            🎓
+                        </div>
+                    </div>
+                    <div class="course-body">
+                        <div class="course-badge badge-pick">⭐ E-Lecturer Pick</div>
+                        <div class="course-code">{{ course.code }}</div>
+                        <div class="course-title">{{ course.title }}</div>
+                        <div class="course-footer">
+                            <span class="course-meta">{{ course.level }} · {{ course.semester }}</span>
+                        </div>
+                    </div>
+                </a>
+                <div style="padding: 0 13px 13px;">
+                    <form method="POST" action="{% url 'enroll_course' course.id %}" class="enroll-form" style="width:100%;">
+                        {% csrf_token %}
+                        <button type="submit" class="course-btn" style="width:100%; justify-content:center;">
+                            Enroll →
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-card">
+                <span class="empty-icon">🤖</span>
+                <div>
+                    <strong>Personalising your picks</strong>
+                    Enroll in more courses to unlock recommendations.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="scroll-dots" id="dots2"></div>
+
+</div>
+
+<div class="toast" id="dashToast"></div>
+
+<script id="dashMessages" type="application/json">
+[
+{% for message in messages %}
+    {"text": "{{ message|escapejs }}", "isErr": {% if message.tags == 'error' %}true{% else %}false{% endif %}}{% if not forloop.last %},{% endif %}
+{% endfor %}
+]
+</script>
+
+<script>
+function scrollRow(id, dir) {
+    const row = document.getElementById(id);
+    const cardWidth = row.querySelector('.course-card')?.offsetWidth || 280;
+    row.scrollBy({ left: dir * (cardWidth + 14), behavior: 'smooth' });
+}
+
+function initDots(rowId, dotsId) {
+    const row   = document.getElementById(rowId);
+    const dots  = document.getElementById(dotsId);
+    if (!row || !dots) return;
+
+    const cards = row.querySelectorAll('.course-card');
+    if (cards.length <= 1) { dots.style.display = 'none'; return; }
+
+    cards.forEach((_, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'scroll-dot' + (i === 0 ? ' active' : '');
+        dot.onclick = () => {
+            const cardW = cards[0].offsetWidth + 14;
+            row.scrollTo({ left: i * cardW, behavior: 'smooth' });
+        };
+        dots.appendChild(dot);
+    });
+
+    row.addEventListener('scroll', () => {
+        const cardW   = (cards[0]?.offsetWidth || 265) + 14;
+        const active  = Math.round(row.scrollLeft / cardW);
+        dots.querySelectorAll('.scroll-dot').forEach((d, i) => {
+            d.classList.toggle('active', i === active);
+        });
+    }, { passive: true });
+}
+
+function refreshPicks() {
+    const btn = document.getElementById('refreshPicksBtn');
+    btn.classList.add('spinning');
+    // Reload just triggers the view again, which reshuffles recommendations
+    window.location.reload();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initDots('row1', 'dots1');
+    initDots('row2', 'dots2');
+
+    const dashMessages = JSON.parse(document.getElementById('dashMessages').textContent || '[]');
+    dashMessages.forEach(msg => showToast(msg.text, msg.isErr));
+});
+
+function showToast(msg, isErr) {
+    const t = document.getElementById('dashToast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isErr ? ' err' : '');
+    setTimeout(() => { t.className = 'toast'; }, 4000);
+}
+</script>
+
+{% endblock %}

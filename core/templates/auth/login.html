@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - E-Lecturer</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #0a0f1e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.orb { position: fixed; border-radius: 50%; pointer-events: none; filter: blur(80px); z-index: 0; }
+.orb-1 { width: 500px; height: 500px; background: rgba(0,194,255,0.09); top: -150px; left: -150px; animation: floatA 14s ease-in-out infinite; }
+.orb-2 { width: 400px; height: 400px; background: rgba(0,245,212,0.07); bottom: -100px; right: -100px; animation: floatB 18s ease-in-out infinite; }
+@keyframes floatA { 0%,100% { transform: translate(0,0); } 50% { transform: translate(50px,60px); } }
+@keyframes floatB { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-40px,-50px); } }
+
+.card {
+    width: 100%; max-width: 440px;
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(24px);
+    padding: 48px 44px; border-radius: 28px; color: white;
+    border: 1px solid rgba(255,255,255,0.08);
+    position: relative; z-index: 1;
+    animation: fadeUp 0.6s ease both; margin: 20px;
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+.brand { display: flex; align-items: center; gap: 10px; margin-bottom: 32px; text-decoration: none; }
+.brand img { width: 40px; height: 40px; border-radius: 11px; object-fit: cover; box-shadow: 0 0 0 2px rgba(0,245,212,0.35), 0 0 16px rgba(0,194,255,0.2); }
+.brand-name { font-size: 18px; font-weight: 800; letter-spacing: -0.3px; background: linear-gradient(135deg, #fff 30%, #00f5d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.4px; }
+.subtitle { font-size: 14px; color: rgba(255,255,255,0.45); margin-bottom: 32px; line-height: 1.5; }
+
+.messages { margin-bottom: 20px; }
+.msg-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #fca5a5; padding: 12px 16px; border-radius: 12px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.msg-error svg { flex-shrink: 0; width: 15px; height: 15px; stroke: #fca5a5; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.65); margin-bottom: 8px; letter-spacing: 0.02em; }
+.field input { width: 100%; padding: 14px 18px; border: 1.5px solid rgba(255,255,255,0.1); border-radius: 13px; font-size: 15px; background: rgba(255,255,255,0.05); color: white; outline: none; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; font-family: 'Inter', sans-serif; }
+.field input::placeholder { color: rgba(255,255,255,0.25); }
+.field input:focus { border-color: #00f5d4; box-shadow: 0 0 0 3px rgba(0,245,212,0.12); background: rgba(255,255,255,0.07); }
+
+.password-wrap { position: relative; }
+.password-wrap input { padding-right: 52px; }
+.eye-toggle { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 0; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.35); transition: color 0.2s; }
+.eye-toggle:hover { color: #00f5d4; }
+.eye-toggle .icon-eye { display: block; }
+.eye-toggle .icon-eye-off { display: none; }
+.eye-toggle.active .icon-eye { display: none; }
+.eye-toggle.active .icon-eye-off { display: block; }
+.eye-toggle svg { width: 20px; height: 20px; pointer-events: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.submit-btn { width: 100%; padding: 15px; border: none; border-radius: 13px; background: linear-gradient(135deg, #00c2ff, #00f5d4); color: #0a0f1e; font-size: 15px; font-family: 'Inter', sans-serif; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s; }
+.submit-btn:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,245,212,0.3); }
+.submit-btn:active { transform: translateY(0); }
+
+.divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: rgba(255,255,255,0.2); font-size: 12px; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.08); }
+
+.footer-text { margin-top: 24px; font-size: 14px; color: rgba(255,255,255,0.4); text-align: center; }
+.footer-text a { color: #00f5d4; text-decoration: none; font-weight: 600; transition: opacity 0.2s; }
+.footer-text a:hover { opacity: 0.75; }
+
+@media (max-width: 480px) { .card { padding: 36px 28px; } h1 { font-size: 24px; } }
+</style>
+</head>
+
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="card">
+    <a href="/" class="brand">
+        <img src="{% static 'images/e-lecturer.png' %}" alt="E-Lecturer Logo">
+        <span class="brand-name">E-Lecturer</span>
+    </a>
+
+    <h1>Welcome Back</h1>
+    <p class="subtitle">Login with your email to continue learning</p>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="msg-error">
+            <svg viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+
+        <div class="field">
+            <label for="emailField">Email Address</label>
+            <input
+                type="email"
+                id="emailField"
+                name="email"
+                placeholder="Enter your email"
+                value="{{ request.POST.email|default:'' }}"
+                required
+                autocomplete="email"
+                autofocus>
+        </div>
+
+        <div class="field">
+            <label for="passwordField">Password</label>
+            <div class="password-wrap">
+                <input
+                    type="password"
+                    id="passwordField"
+                    name="password"
+                    placeholder="Enter your password"
+                    required
+                    autocomplete="current-password">
+                <button type="button" class="eye-toggle" id="eyeToggle" aria-label="Show password">
+                    <svg class="icon-eye" viewBox="0 0 24 24">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    <svg class="icon-eye-off" viewBox="0 0 24 24">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn">🔐 Login to E-Lecturer</button>
+    </form>
+
+    <div class="divider">or</div>
+
+    <p class="footer-text">
+        Don't have an account? <a href="{% url 'register' %}">Sign up free →</a>
+    </p>
+</div>
+
+<script>
+    document.getElementById('eyeToggle').addEventListener('click', function () {
+        const input = document.getElementById('passwordField');
+        if (input.type === 'password') {
+            input.type = 'text';
+            this.classList.add('active');
+            this.setAttribute('aria-label', 'Hide password');
+        } else {
+            input.type = 'password';
+            this.classList.remove('active');
+            this.setAttribute('aria-label', 'Show password');
+        }
+    });
+</script>
+
+</body>
+</html>

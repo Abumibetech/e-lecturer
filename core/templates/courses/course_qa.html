@@ -1,0 +1,321 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}
+{{ course.code }} Q&A — E-Lecturer
+{% endblock %}
+
+{% block extra_css %}
+
+.qa-wrap{
+max-width:1100px;
+margin:auto;
+padding:36px;
+}
+
+.qa-header{
+
+position:relative;
+
+overflow:hidden;
+
+border-radius:30px;
+
+padding:40px;
+
+background:
+linear-gradient(
+135deg,
+#0f172a,
+#312e81,
+#06b6d4
+);
+
+box-shadow:
+0 30px 60px rgba(0,0,0,.25);
+
+margin-bottom:34px;
+
+}
+
+.qa-header::before{
+
+content:'';
+
+position:absolute;
+
+right:-80px;
+
+top:-80px;
+
+width:260px;
+
+height:260px;
+
+border-radius:50%;
+
+background:
+
+rgba(255,255,255,.05);
+
+}
+
+.brand{
+
+display:flex;
+
+align-items:center;
+
+gap:18px;
+
+margin-bottom:28px;
+
+}
+
+.logo-box{
+
+width:84px;
+
+height:84px;
+
+background:
+
+rgba(255,255,255,.12);
+
+backdrop-filter:blur(20px);
+
+border-radius:26px;
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+border:
+
+1px solid rgba(255,255,255,.1);
+
+}
+
+.logo{
+
+width:54px;
+
+height:54px;
+
+object-fit:contain;
+
+}
+
+.brand-text h2{
+
+margin:0;
+
+color:white;
+
+font-size:24px;
+
+font-weight:800;
+
+}
+
+.brand-text p{
+
+margin-top:4px;
+
+color:rgba(255,255,255,.75);
+
+}
+
+.download-btn{
+
+display:inline-flex;
+
+align-items:center;
+
+gap:10px;
+
+padding:14px 22px;
+
+border-radius:16px;
+
+background:white;
+
+color:#111827;
+
+text-decoration:none;
+
+font-weight:800;
+
+transition:.3s;
+
+}
+
+.download-btn:hover{
+
+transform:translateY(-3px);
+
+}
+
+.qa-item{
+
+background:rgba(255,255,255,.03);
+
+border-radius:20px;
+
+overflow:hidden;
+
+margin-bottom:18px;
+
+}
+
+.qa-row{
+
+padding:24px;
+
+cursor:pointer;
+
+display:flex;
+
+justify-content:space-between;
+
+}
+
+.qa-content{
+
+display:none;
+
+padding:26px;
+
+white-space:pre-wrap;
+
+line-height:1.9;
+
+}
+
+.qa-item.open .qa-content{
+
+display:block;
+
+}
+
+@media(max-width:768px){
+
+.qa-wrap{
+
+padding:18px;
+
+}
+
+.brand{
+
+flex-direction:column;
+
+align-items:flex-start;
+
+}
+
+}
+
+{% endblock %}
+
+
+
+{% block content %}
+
+<div class="qa-wrap">
+
+<div class="qa-header">
+
+<div class="brand">
+
+<div class="logo-box">
+
+<img
+src="{% static 'images/e-lecturer.png' %}"
+class="logo"
+>
+
+</div>
+
+<div class="brand-text">
+
+<h2>
+
+E-Lecturer
+
+</h2>
+
+<p>
+
+{{ course.code }}
+
+•
+
+Questions & Answers
+
+</p>
+
+</div>
+
+</div>
+
+<a
+href="{% url 'course_qa_pdf' course.id %}"
+class="download-btn"
+>
+
+📄 Download PDF
+
+</a>
+
+</div>
+
+
+{% for qa in qa_list %}
+
+<div class="qa-item">
+
+<div
+class="qa-row"
+onclick="this.parentElement.classList.toggle('open')"
+>
+
+<div>
+
+{{ forloop.counter }}.
+
+{{ qa.title }}
+
+</div>
+
+<div>
+
+▼
+
+</div>
+
+</div>
+
+<div class="qa-content">
+
+{{ qa.content }}
+
+</div>
+
+</div>
+
+{% empty %}
+
+<h3>
+
+No Q&A uploaded
+
+</h3>
+
+{% endfor %}
+
+</div>
+
+{% endblock %}

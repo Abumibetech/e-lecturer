@@ -1,0 +1,349 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ course.title }} • E-Lecturer</title>
+
+<style>
+
+:root{
+--bg:#071019;
+--card:#0d1722;
+--card2:#111d2c;
+--line:rgba(255,255,255,.08);
+--primary:#00c2ff;
+--accent:#00f5d4;
+--text:#ffffff;
+--muted:#9bb0c4;
+--radius:24px;
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+body{
+background: radial-gradient(circle at top,#0b2235 0%,#071019 60%);
+font-family:Inter,Segoe UI,sans-serif;
+color:var(--text);
+display:flex;
+min-height:100vh;
+flex-wrap: wrap;
+}
+
+.sidebar{
+width:320px;
+background: rgba(10,18,28,.96);
+border-right:1px solid var(--line);
+overflow-y:auto;
+padding:24px;
+}
+
+.brand{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+.brand h2{ font-size:20px; }
+.brand a{ color:var(--accent); text-decoration:none; font-size:13px; }
+
+.course-title{ font-size:16px; margin-bottom:10px; color:var(--text); opacity:.9; }
+
+.progress{
+height:8px; background:#172636; border-radius:999px;
+overflow:hidden; margin:15px 0 25px;
+}
+.progress-fill{
+height:100%;
+background: linear-gradient(90deg,var(--primary),var(--accent));
+width:{{ enrollment.progress }}%;
+transition: width .6s ease;
+}
+
+.module{ margin-bottom:18px; }
+.module-title{
+font-size:12px; text-transform:uppercase; letter-spacing:.08em;
+color:var(--muted); margin-bottom:10px;
+}
+
+.lesson{
+display:flex; justify-content:space-between; align-items:center;
+padding:12px 14px; margin-bottom:8px; border-radius:14px;
+background:var(--card2); text-decoration:none; color:white;
+font-size:14px; transition:.2s; border:1px solid transparent;
+}
+.lesson:hover{ transform:translateX(3px); background:#142435; }
+.active{
+background: linear-gradient(135deg,rgba(0,194,255,.18),rgba(0,245,212,.12));
+border:1px solid rgba(0,245,212,.25);
+}
+.lesson-check{
+flex-shrink:0; width:18px; height:18px; border-radius:50%;
+display:flex; align-items:center; justify-content:center;
+font-size:11px; margin-left:8px;
+background: rgba(255,255,255,0.08);
+}
+.lesson-check.done{
+background: linear-gradient(135deg,var(--primary),var(--accent));
+color:#071019;
+}
+
+.main{ flex:1; min-width:300px; padding:35px; }
+.main h1{ font-size:26px; margin-bottom:20px; }
+
+.video-box{
+background:black; border-radius:26px; overflow:hidden;
+position:relative; aspect-ratio:16/9;
+box-shadow:0 10px 40px rgba(0,0,0,.4);
+}
+
+video, iframe{ width:100%; height:100%; display:none; border:0; }
+
+.overlay{
+position:absolute; inset:0; display:flex; align-items:center;
+justify-content:center; flex-direction:column; gap:14px; cursor:pointer;
+background: linear-gradient(135deg,rgba(0,194,255,.35),rgba(0,245,212,.15));
+backdrop-filter: blur(6px);
+}
+
+.play{
+width:90px; height:90px; border-radius:50%; background:white;
+color:black; display:flex; align-items:center; justify-content:center;
+font-size:40px; font-weight:bold;
+}
+
+.controls{ display:flex; gap:12px; flex-wrap:wrap; margin-top:18px; }
+
+.btn{
+padding:12px 16px; border:none; border-radius:14px; cursor:pointer;
+color:white; font-weight:600;
+background: linear-gradient(135deg,var(--primary),var(--accent));
+transition:.2s;
+}
+.btn:hover{ opacity:.85; transform:translateY(-1px); }
+
+.btn-complete{ background: linear-gradient(135deg,#22c55e,#4ade80); }
+.btn-complete:disabled{
+background: rgba(34,197,94,0.2); color: #4ade80;
+cursor: default; opacity: 1;
+}
+
+.nav-buttons{ display:flex; gap:12px; margin-top:18px; flex-wrap: wrap; }
+.btn-nav{
+padding:12px 20px; border-radius:14px; text-decoration:none;
+background: rgba(255,255,255,0.06); color:white; font-weight:600;
+border:1px solid var(--line); transition:.2s;
+}
+.btn-nav:hover{ background: rgba(255,255,255,0.12); }
+
+.notes{
+margin-top:25px; padding:22px; border-radius:20px;
+background: rgba(255,255,255,.03); border:1px solid var(--line);
+}
+.notes h2{ font-size:18px; margin-bottom:10px; }
+
+.resume-banner{
+background: rgba(0,245,212,0.08); border:1px solid rgba(0,245,212,0.25);
+border-radius:14px; padding:12px 16px; margin-bottom:16px;
+font-size:13px; color: var(--accent); display:none;
+}
+.resume-banner.show{ display:block; }
+
+@media(max-width:900px){
+body{ flex-direction:column; }
+.sidebar{ width:100%; }
+.main{ padding:20px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+
+<div class="brand">
+<h2>E-Lecturer</h2>
+<a href="{% url 'course_detail' course.id %}">← Back</a>
+</div>
+
+<div class="course-title">{{ course.title }}</div>
+
+<div class="progress">
+<div class="progress-fill"></div>
+</div>
+
+{% for module in modules %}
+<div class="module">
+<div class="module-title">{{ module.title }}</div>
+
+{% for lesson in module.lessons.all %}
+<a href="{% url 'course_player_lesson' course.id lesson.id %}"
+   class="lesson {% if current_lesson and current_lesson.id == lesson.id %}active{% endif %}">
+    <span>{{ lesson.title }}</span>
+    <span class="lesson-check {% if lesson.id in completed_lesson_ids %}done{% endif %}">
+        {% if lesson.id in completed_lesson_ids %}✓{% endif %}
+    </span>
+</a>
+{% empty %}
+<div class="lesson">No lessons</div>
+{% endfor %}
+
+</div>
+{% endfor %}
+
+</div>
+
+<div class="main">
+
+{% if current_lesson %}
+
+<h1>{{ current_lesson.title }}</h1>
+
+<div class="resume-banner" id="resumeBanner"></div>
+
+<div class="video-box">
+
+{% if current_lesson.video_file %}
+<div class="overlay" id="overlay">
+    <div class="play">▶</div>
+    Start Lesson
+</div>
+<video id="player" controls preload="metadata">
+    <source src="{{ current_lesson.video_file.url }}" type="video/mp4">
+</video>
+
+{% elif current_lesson.video_url %}
+<div class="overlay" id="overlay">
+    <div class="play">▶</div>
+    Open Video
+</div>
+<iframe id="iframe" data-src="{{ current_lesson.video_url }}" allowfullscreen></iframe>
+
+{% else %}
+<div class="overlay">No Video Available</div>
+{% endif %}
+
+</div>
+
+<div class="controls">
+    <button class="btn" onclick="toggleSpeed()">⚡ Speed</button>
+    <button class="btn" onclick="toggleMute()">🔊 Mute</button>
+    <button class="btn" onclick="fullscreen()">⛶ Fullscreen</button>
+
+    {% if current_progress.is_completed %}
+        <button class="btn btn-complete" disabled>✓ Completed</button>
+    {% else %}
+        <form method="POST"
+              action="{% url 'mark_lesson_complete' course.id current_lesson.id %}"
+              style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-complete">✓ Mark as Complete</button>
+        </form>
+    {% endif %}
+</div>
+
+<div class="nav-buttons">
+    {% if prev_lesson %}
+    <a href="{% url 'course_player_lesson' course.id prev_lesson.id %}" class="btn-nav">← Previous</a>
+    {% endif %}
+    {% if next_lesson %}
+    <a href="{% url 'course_player_lesson' course.id next_lesson.id %}" class="btn-nav">Next →</a>
+    {% endif %}
+</div>
+
+<div class="notes">
+    <h2>Lesson Notes</h2>
+    <p>{{ current_lesson.description|default:"No notes available." }}</p>
+</div>
+
+{% endif %}
+
+</div>
+
+<script>
+const overlay        = document.getElementById("overlay");
+const player          = document.getElementById("player");
+const iframe          = document.getElementById("iframe");
+const resumeBanner    = document.getElementById("resumeBanner");
+const lessonId        = {{ current_lesson.id|default:"null" }};
+const resumePosition  = {{ current_progress.last_position|default:"0" }};
+
+function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+}
+
+function savePosition(pos) {
+    if (!lessonId) return;
+    fetch(`/lesson/${lessonId}/save-position/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify({ position: pos }),
+    }).catch(() => {});
+}
+
+/* Overlay click just reveals/starts the player —
+   it does NOT handle the resume seek anymore */
+if (overlay) {
+    overlay.onclick = () => {
+        overlay.style.display = "none";
+
+        if (player) {
+            player.style.display = "block";
+            player.play();
+        }
+
+        if (iframe) {
+            iframe.style.display = "block";
+            iframe.src = iframe.dataset.src;
+        }
+    };
+}
+
+/* Apply resume position as soon as the browser knows the video's
+   duration/metadata — this works no matter HOW playback starts:
+   the custom overlay, the native HTML5 play button, or autoplay. */
+if (player && resumePosition > 5) {
+    player.addEventListener('loadedmetadata', () => {
+        player.currentTime = resumePosition;
+    }, { once: true });
+}
+
+/* Show resume banner so the student knows where they left off */
+if (player && resumePosition > 5) {
+    const mins = Math.floor(resumePosition / 60);
+    const secs = Math.floor(resumePosition % 60);
+    resumeBanner.textContent = `▶ You left off at ${mins}:${secs.toString().padStart(2,'0')} — playback will resume from there.`;
+    resumeBanner.classList.add('show');
+}
+
+/* Auto-save video position every 5 seconds while playing,
+   and also on pause / leaving the page */
+if (player) {
+    setInterval(() => {
+        if (!player.paused && !player.ended) {
+            savePosition(player.currentTime);
+        }
+    }, 5000);
+
+    player.addEventListener('pause', () => savePosition(player.currentTime));
+    window.addEventListener('beforeunload', () => savePosition(player.currentTime));
+}
+
+function toggleSpeed(){
+    if(!player) return;
+    const rates=[1,1.25,1.5,2];
+    const i=rates.indexOf(player.playbackRate);
+    player.playbackRate=rates[(i+1)%rates.length];
+}
+
+function toggleMute(){
+    if(player){ player.muted=!player.muted; }
+}
+
+function fullscreen(){
+    document.querySelector(".video-box").requestFullscreen();
+}
+</script>
+
+</body>
+</html>

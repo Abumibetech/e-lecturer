@@ -1,0 +1,7 @@
+from .agricultural import AGRICULTURAL_PROGRAMMES
+from .social_sciences import SOCIAL_SCIENCES_PROGRAMMES
+
+NOUN_DATA = {}
+
+for d in [AGRICULTURAL_PROGRAMMES, SOCIAL_SCIENCES_PROGRAMMES]:
+    NOUN_DATA.update(d)

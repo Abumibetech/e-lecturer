@@ -1,0 +1,275 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}My Courses — E-Lecturer{% endblock %}
+
+{% block extra_css %}
+.mc-wrap { padding: 40px 36px; }
+
+.mc-header { margin-bottom: 28px; animation: fadeUp 0.5s ease both; }
+.mc-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(0,245,212,0.08); border: 1px solid rgba(0,245,212,0.2);
+    color: #00f5d4; font-size: 11px; font-weight: 700;
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 14px;
+    letter-spacing: 0.07em; text-transform: uppercase;
+}
+.mc-header h1 {
+    font-size: clamp(22px, 4vw, 30px);
+    font-weight: 900; letter-spacing: -0.5px; margin-bottom: 6px;
+}
+.mc-header p { color: rgba(255,255,255,0.5); font-size: 14px; }
+
+.mc-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+.mc-tab {
+    padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+.mc-tab:hover { background: rgba(255,255,255,0.08); color: white; }
+.mc-tab.active {
+    background: linear-gradient(135deg, rgba(0,194,255,0.2), rgba(0,245,212,0.15));
+    border-color: rgba(0,245,212,0.4); color: #00f5d4;
+}
+
+.mc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+.mc-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px; padding: 22px;
+    transition: all 0.3s; animation: fadeUp 0.5s ease both;
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column;
+}
+.mc-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #00c2ff, #00f5d4);
+    transform: scaleX(0); transform-origin: left; transition: transform 0.4s ease;
+}
+.mc-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(0,245,212,0.3);
+    box-shadow: 0 16px 36px rgba(0,0,0,0.3);
+}
+.mc-card:hover::before { transform: scaleX(1); }
+
+.mc-top {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; gap: 10px; margin-bottom: 12px;
+}
+.mc-code {
+    font-size: 11px; font-weight: 800; color: #00c2ff;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    background: rgba(0,194,255,0.1); padding: 4px 10px; border-radius: 8px;
+}
+.mc-status {
+    font-size: 10px; font-weight: 800; padding: 4px 10px;
+    border-radius: 20px; text-transform: uppercase;
+    letter-spacing: 0.05em; white-space: nowrap;
+}
+.mc-status.in-progress {
+    background: rgba(245,158,11,0.12); color: #fbbf24;
+    border: 1px solid rgba(245,158,11,0.25);
+}
+.mc-status.completed {
+    background: rgba(34,197,94,0.12); color: #4ade80;
+    border: 1px solid rgba(34,197,94,0.25);
+}
+
+.mc-title {
+    font-size: 15px; font-weight: 700; color: #fff;
+    margin-bottom: 16px; line-height: 1.4; flex: 1;
+}
+
+.mc-progress-row {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 7px;
+}
+.mc-progress-label { font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 600; }
+.mc-progress-pct {
+    font-size: 13px; font-weight: 800;
+    background: linear-gradient(135deg, #00c2ff, #00f5d4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.mc-bar {
+    height: 7px; background: rgba(255,255,255,0.06);
+    border-radius: 10px; overflow: hidden; margin-bottom: 18px;
+}
+.mc-bar-fill {
+    height: 100%; border-radius: 10px; width: 0%;
+    background: linear-gradient(90deg, #00c2ff, #00f5d4);
+    transition: width 1s cubic-bezier(0.4,0,0.2,1);
+}
+.mc-bar-fill.done { background: linear-gradient(90deg, #22c55e, #4ade80); }
+
+.mc-actions { display: flex; gap: 8px; margin-top: auto; }
+.mc-btn {
+    flex: 1; display: inline-flex; align-items: center;
+    justify-content: center; gap: 6px;
+    padding: 10px 14px; border-radius: 11px;
+    text-decoration: none; font-size: 13px; font-weight: 700;
+    transition: all 0.2s; border: none; cursor: pointer;
+    font-family: 'Inter', sans-serif;
+}
+.mc-btn-primary {
+    background: linear-gradient(135deg, #00c2ff, #00f5d4); color: #0a0f1e;
+    box-shadow: 0 4px 14px rgba(0,245,212,0.2);
+}
+.mc-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,245,212,0.35);
+}
+.mc-btn-secondary {
+    background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.mc-btn-secondary:hover { background: rgba(255,255,255,0.09); color: white; }
+.mc-btn-danger {
+    background: rgba(239,68,68,0.1); color: #f87171;
+    border: 1px solid rgba(239,68,68,0.2);
+    flex: 0 0 42px;
+}
+.mc-btn-danger:hover { background: rgba(239,68,68,0.2); transform: translateY(-2px); }
+.mc-form { display: contents; }
+
+.mc-empty {
+    grid-column: 1 / -1;
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 22px; padding: 60px 30px; text-align: center;
+    animation: fadeUp 0.5s ease both;
+}
+.mc-empty-icon {
+    font-size: 48px; margin-bottom: 16px;
+    animation: floatIcon 3s ease-in-out infinite;
+}
+@keyframes floatIcon {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+.mc-empty h3 { font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.mc-empty p  { color: rgba(255,255,255,0.4); font-size: 14px; margin-bottom: 24px; }
+.mc-empty-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 26px;
+    background: linear-gradient(135deg, #00c2ff, #00f5d4);
+    color: #0a0f1e; border-radius: 12px; text-decoration: none;
+    font-weight: 700; font-size: 14px; transition: all 0.2s;
+    box-shadow: 0 4px 18px rgba(0,245,212,0.25);
+}
+.mc-empty-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 26px rgba(0,245,212,0.35);
+}
+
+.mc-card:nth-child(1){animation-delay:.05s}
+.mc-card:nth-child(2){animation-delay:.1s}
+.mc-card:nth-child(3){animation-delay:.15s}
+.mc-card:nth-child(4){animation-delay:.2s}
+.mc-card:nth-child(5){animation-delay:.25s}
+.mc-card:nth-child(6){animation-delay:.3s}
+
+@media (max-width: 768px) {
+    .mc-wrap { padding: 24px 16px; }
+    .mc-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+    .mc-actions { flex-wrap: wrap; }
+    .mc-btn-primary { flex: 1 1 100%; }
+    .mc-btn-secondary { flex: 1; }
+}
+{% endblock %}
+
+{% block content %}
+<div class="mc-wrap">
+
+    <div class="mc-header">
+        <div class="mc-eyebrow">📚 Your Learning Path</div>
+        <h1>My Courses</h1>
+        <p>All the courses you are currently enrolled in</p>
+    </div>
+
+    <div class="mc-tabs">
+        <button class="mc-tab active" onclick="filterCards('all', this)">All</button>
+        <button class="mc-tab" onclick="filterCards('progress', this)">In Progress</button>
+        <button class="mc-tab" onclick="filterCards('done', this)">Completed</button>
+    </div>
+
+    <div class="mc-grid" id="mcGrid">
+        {% for enrollment in enrollments %}
+        <div class="mc-card"
+             data-status="{% if enrollment.completed %}done{% else %}progress{% endif %}">
+
+            <div class="mc-top">
+                <span class="mc-code">{{ enrollment.course.code }}</span>
+                {% if enrollment.completed %}
+                    <span class="mc-status completed">✓ Completed</span>
+                {% else %}
+                    <span class="mc-status in-progress">⚡ In Progress</span>
+                {% endif %}
+            </div>
+
+            <h3 class="mc-title">{{ enrollment.course.title }}</h3>
+
+            <div class="mc-progress-row">
+                <span class="mc-progress-label">Progress</span>
+                <span class="mc-progress-pct">{{ enrollment.progress|floatformat:0 }}%</span>
+            </div>
+            <div class="mc-bar">
+                <div class="mc-bar-fill {% if enrollment.completed %}done{% endif %}"
+                     data-width="{{ enrollment.progress|floatformat:0 }}"></div>
+            </div>
+
+            <div class="mc-actions">
+                <a href="{% url 'course_player' enrollment.course.id %}"
+                   class="mc-btn mc-btn-primary">▶ Continue</a>
+                <a href="{% url 'course_qa' enrollment.course.id %}"
+                   class="mc-btn mc-btn-secondary">💬 Q&A</a>
+                <form class="mc-form" method="POST"
+                      action="{% url 'drop_course' enrollment.id %}"
+                      onsubmit="return confirm('Drop this course? This cannot be undone.');">
+                    {% csrf_token %}
+                    <button type="submit" class="mc-btn mc-btn-danger"
+                            title="Drop course">✖</button>
+                </form>
+            </div>
+
+        </div>
+        {% empty %}
+        <div class="mc-empty">
+            <div class="mc-empty-icon">🎓</div>
+            <h3>No courses enrolled yet</h3>
+            <p>Head over to Explore and find a course to get started.</p>
+            <a href="{% url 'explore' %}" class="mc-empty-btn">🔍 Explore Courses</a>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.mc-bar-fill').forEach(bar => {
+        setTimeout(() => {
+            bar.style.width = bar.getAttribute('data-width') + '%';
+        }, 200);
+    });
+});
+
+function filterCards(type, btn) {
+    document.querySelectorAll('.mc-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.mc-card').forEach(card => {
+        const show = type === 'all' || card.dataset.status === type;
+        card.style.display = show ? '' : 'none';
+    });
+}
+</script>
+{% endblock %}
