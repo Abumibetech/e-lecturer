@@ -1,0 +1,402 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}GPA / CGPA Calculator — E-Lecturer{% endblock %}
+
+{% block extra_css %}
+.gpa-wrap { padding: 40px 36px; max-width: 900px; }
+
+.gpa-header { margin-bottom: 28px; animation: fadeUp 0.5s ease both; }
+.gpa-eyebrow {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(0,245,212,0.08); border: 1px solid rgba(0,245,212,0.2);
+    color: #00f5d4; font-size: 11px; font-weight: 700;
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 14px;
+    letter-spacing: 0.07em; text-transform: uppercase;
+}
+.gpa-header h1 { font-size: clamp(22px, 4vw, 30px); font-weight: 900; letter-spacing: -0.5px; margin-bottom: 6px; }
+.gpa-header p { color: rgba(255,255,255,0.5); font-size: 14px; }
+
+/* ── MODE TABS ── */
+.gpa-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+.gpa-tab {
+    padding: 9px 20px; border-radius: 20px; font-size: 13px; font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04);
+    color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+.gpa-tab:hover { background: rgba(255,255,255,0.08); color: white; }
+.gpa-tab.active {
+    background: linear-gradient(135deg, rgba(0,194,255,0.2), rgba(0,245,212,0.15));
+    border-color: rgba(0,245,212,0.4); color: #00f5d4;
+}
+
+/* ── GRADE SCALE INFO ── */
+.scale-info {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px; padding: 16px 20px; margin-bottom: 24px;
+    animation: fadeUp 0.5s ease both;
+}
+.scale-info-title {
+    font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.5);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;
+}
+.scale-grid {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
+}
+.scale-item {
+    text-align: center; background: rgba(255,255,255,0.03);
+    border-radius: 10px; padding: 8px 4px;
+}
+.scale-item .letter { font-size: 15px; font-weight: 800; color: #00f5d4; }
+.scale-item .range  { font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+.scale-item .point  { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+
+/* ── COURSE TABLE ── */
+.course-table {
+    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px; padding: 20px; margin-bottom: 20px;
+    animation: fadeUp 0.5s ease both;
+}
+.table-header {
+    display: grid; grid-template-columns: 2.2fr 1fr 1fr 1fr 40px;
+    gap: 10px; padding: 0 4px 12px;
+    font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.course-row {
+    display: grid; grid-template-columns: 2.2fr 1fr 1fr 1fr 40px;
+    gap: 10px; align-items: center; padding: 10px 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.course-row input, .course-row select {
+    width: 100%; padding: 9px 10px;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 9px; color: white; font-size: 13px; font-family: inherit;
+    outline: none; transition: all 0.2s;
+}
+.course-row input:focus, .course-row select:focus {
+    border-color: rgba(0,245,212,0.5); background: rgba(255,255,255,0.08);
+}
+.course-row select option { background: #0a0f1e; color: white; }
+.row-point {
+    font-size: 12px; font-weight: 700; color: #00f5d4; text-align: center;
+}
+.remove-row-btn {
+    width: 32px; height: 32px; border-radius: 9px; border: none;
+    background: rgba(239,68,68,0.12); color: #f87171; cursor: pointer;
+    font-size: 14px; transition: all 0.2s; display: flex;
+    align-items: center; justify-content: center;
+}
+.remove-row-btn:hover { background: rgba(239,68,68,0.25); transform: scale(1.05); }
+
+.add-row-btn {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 14px;
+    padding: 10px 18px; background: rgba(0,245,212,0.08);
+    border: 1px solid rgba(0,245,212,0.25); color: #00f5d4;
+    border-radius: 11px; cursor: pointer; font-size: 13px; font-weight: 700;
+    transition: all 0.2s; font-family: inherit;
+}
+.add-row-btn:hover { background: rgba(0,245,212,0.15); transform: translateY(-1px); }
+
+/* ── SEMESTER BLOCKS (CGPA mode) ── */
+.semester-block {
+    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px; padding: 20px; margin-bottom: 18px;
+    animation: fadeUp 0.5s ease both;
+}
+.semester-block-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px; flex-wrap: wrap; gap: 10px;
+}
+.semester-block-header h3 { font-size: 14px; font-weight: 700; color: #fff; }
+.semester-gpa-pill {
+    background: rgba(0,245,212,0.1); color: #00f5d4; font-size: 12px;
+    font-weight: 800; padding: 5px 12px; border-radius: 20px;
+}
+.remove-semester-btn {
+    background: rgba(239,68,68,0.1); color: #f87171; border: none;
+    border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer;
+    font-weight: 700; transition: all 0.2s;
+}
+.remove-semester-btn:hover { background: rgba(239,68,68,0.2); }
+
+.add-semester-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 22px; background: linear-gradient(135deg, #00c2ff, #00f5d4);
+    color: #0a0f1e; border-radius: 12px; border: none; cursor: pointer;
+    font-weight: 700; font-size: 14px; transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(0,245,212,0.2); margin-bottom: 20px;
+}
+.add-semester-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,245,212,0.35); }
+
+/* ── RESULT CARD ── */
+.result-card {
+    background: linear-gradient(135deg, rgba(0,194,255,0.12), rgba(0,245,212,0.08));
+    border: 1px solid rgba(0,245,212,0.3); border-radius: 20px;
+    padding: 28px; text-align: center; margin-top: 24px;
+    animation: fadeUp 0.5s ease both; position: relative; overflow: hidden;
+}
+.result-card::before {
+    content: ''; position: absolute; top: -50px; right: -50px;
+    width: 160px; height: 160px; background: rgba(0,245,212,0.08); border-radius: 50%;
+}
+.result-label {
+    font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.6);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px;
+}
+.result-value {
+    font-size: clamp(40px, 8vw, 56px); font-weight: 900;
+    background: linear-gradient(135deg, #00c2ff, #00f5d4);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; line-height: 1; margin-bottom: 8px;
+}
+.result-remark { font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.7); }
+.result-meta {
+    display: flex; justify-content: center; gap: 30px; margin-top: 18px;
+    flex-wrap: wrap;
+}
+.result-meta-item { text-align: center; }
+.result-meta-item .val { font-size: 18px; font-weight: 800; color: #fff; }
+.result-meta-item .lbl { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+
+.calc-btn {
+    display: block; width: 100%; padding: 15px;
+    background: linear-gradient(135deg, #00c2ff, #00f5d4);
+    color: #0a0f1e; border: none; border-radius: 14px;
+    font-size: 15px; font-weight: 800; cursor: pointer;
+    transition: all 0.25s; box-shadow: 0 6px 20px rgba(0,245,212,0.25);
+    margin-top: 8px;
+}
+.calc-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,245,212,0.4); }
+
+@media (max-width: 700px) {
+    .gpa-wrap { padding: 24px 16px; }
+    .scale-grid { grid-template-columns: repeat(3, 1fr); }
+    .table-header { display: none; }
+    .course-row {
+        grid-template-columns: 1fr; gap: 8px;
+        background: rgba(255,255,255,0.02); border-radius: 12px;
+        padding: 14px; margin-bottom: 10px; border-bottom: none;
+    }
+    .row-point { text-align: left; }
+    .remove-row-btn { width: 100%; height: 36px; }
+}
+{% endblock %}
+
+{% block content %}
+<div class="gpa-wrap">
+
+    <div class="gpa-header">
+        <div class="gpa-eyebrow">🧮 Academic Tools</div>
+        <h1>GPA / CGPA Calculator</h1>
+        <p>Calculate your semester GPA or cumulative CGPA across multiple semesters</p>
+    </div>
+
+    <div class="gpa-tabs">
+        <button class="gpa-tab active" onclick="switchMode('gpa', this)">📘 Single Semester GPA</button>
+        <button class="gpa-tab" onclick="switchMode('cgpa', this)">🎓 Multi-Semester CGPA</button>
+    </div>
+
+    <div class="scale-info">
+        <div class="scale-info-title">Grading Scale</div>
+        <div class="scale-grid">
+            <div class="scale-item"><div class="letter">A</div><div class="range">70–100%</div><div class="point">5 pts</div></div>
+            <div class="scale-item"><div class="letter">B</div><div class="range">60–69%</div><div class="point">4 pts</div></div>
+            <div class="scale-item"><div class="letter">C</div><div class="range">50–59%</div><div class="point">3 pts</div></div>
+            <div class="scale-item"><div class="letter">D</div><div class="range">45–49%</div><div class="point">2 pts</div></div>
+            <div class="scale-item"><div class="letter">E</div><div class="range">40–44%</div><div class="point">1 pt</div></div>
+            <div class="scale-item"><div class="letter">F</div><div class="range">0–39%</div><div class="point">0 pts</div></div>
+        </div>
+    </div>
+
+    <!-- ════════ GPA MODE ════════ -->
+    <div id="gpaMode">
+        <div class="course-table">
+            <div class="table-header">
+                <span>Course</span><span>Units</span><span>Grade</span><span>Points</span><span></span>
+            </div>
+            <div id="gpaRows"></div>
+        </div>
+        <button class="add-row-btn" onclick="addGpaRow()">+ Add Course</button>
+        <button class="calc-btn" onclick="calculateGPA()">Calculate GPA</button>
+        <div class="result-card" id="gpaResult" style="display:none;">
+            <div class="result-label">Your Semester GPA</div>
+            <div class="result-value" id="gpaValue">0.00</div>
+            <div class="result-remark" id="gpaRemark"></div>
+            <div class="result-meta">
+                <div class="result-meta-item"><div class="val" id="gpaTotalUnits">0</div><div class="lbl">Total Units</div></div>
+                <div class="result-meta-item"><div class="val" id="gpaTotalPoints">0</div><div class="lbl">Total Points</div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════ CGPA MODE ════════ -->
+    <div id="cgpaMode" style="display:none;">
+        <div id="semesterList"></div>
+        <button class="add-semester-btn" onclick="addSemester()">+ Add Semester</button>
+        <button class="calc-btn" onclick="calculateCGPA()">Calculate CGPA</button>
+        <div class="result-card" id="cgpaResult" style="display:none;">
+            <div class="result-label">Your Cumulative CGPA</div>
+            <div class="result-value" id="cgpaValue">0.00</div>
+            <div class="result-remark" id="cgpaRemark"></div>
+            <div class="result-meta">
+                <div class="result-meta-item"><div class="val" id="cgpaTotalUnits">0</div><div class="lbl">Total Units</div></div>
+                <div class="result-meta-item"><div class="val" id="cgpaTotalPoints">0</div><div class="lbl">Total Points</div></div>
+                <div class="result-meta-item"><div class="val" id="cgpaSemCount">0</div><div class="lbl">Semesters</div></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const GRADE_POINTS = { 'A': 5, 'B': 4, 'C': 3, 'D': 2, 'E': 1, 'F': 0 };
+
+let gpaRowCount = 0;
+let semCount = 0;
+
+/* ── MODE SWITCH ── */
+function switchMode(mode, btn) {
+    document.querySelectorAll('.gpa-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('gpaMode').style.display  = mode === 'gpa'  ? 'block' : 'none';
+    document.getElementById('cgpaMode').style.display = mode === 'cgpa' ? 'block' : 'none';
+}
+
+/* ── GPA: build a course row ── */
+function gradeOptions() {
+    return Object.keys(GRADE_POINTS).map(g => `<option value="${g}">${g} (${GRADE_POINTS[g]} pts)</option>`).join('');
+}
+
+function buildCourseRow(rowsContainerId, idx) {
+    const row = document.createElement('div');
+    row.className = 'course-row';
+    row.innerHTML = `
+        <input type="text" placeholder="e.g. CSC101" class="course-name-input">
+        <input type="number" placeholder="Units" min="1" max="10" class="course-units-input" oninput="recalcRowPoint(this)">
+        <select class="course-grade-input" onchange="recalcRowPoint(this)">${gradeOptions()}</select>
+        <span class="row-point">0</span>
+        <button class="remove-row-btn" onclick="this.closest('.course-row').remove()">✕</button>
+    `;
+    document.getElementById(rowsContainerId).appendChild(row);
+}
+
+function recalcRowPoint(el) {
+    const row    = el.closest('.course-row');
+    const units  = parseFloat(row.querySelector('.course-units-input').value) || 0;
+    const grade  = row.querySelector('.course-grade-input').value;
+    const point  = GRADE_POINTS[grade] ?? 0;
+    row.querySelector('.row-point').textContent = (units * point).toFixed(1);
+}
+
+function addGpaRow() {
+    gpaRowCount++;
+    buildCourseRow('gpaRows', gpaRowCount);
+}
+
+/* Start GPA mode with 3 rows by default */
+for (let i = 0; i < 3; i++) addGpaRow();
+
+function calculateGPA() {
+    const rows = document.querySelectorAll('#gpaRows .course-row');
+    let totalUnits = 0, totalPoints = 0;
+
+    rows.forEach(row => {
+        const units = parseFloat(row.querySelector('.course-units-input').value) || 0;
+        const grade = row.querySelector('.course-grade-input').value;
+        const point = GRADE_POINTS[grade] ?? 0;
+        totalUnits  += units;
+        totalPoints += units * point;
+    });
+
+    const gpa = totalUnits > 0 ? (totalPoints / totalUnits) : 0;
+
+    document.getElementById('gpaValue').textContent       = gpa.toFixed(2);
+    document.getElementById('gpaTotalUnits').textContent   = totalUnits;
+    document.getElementById('gpaTotalPoints').textContent  = totalPoints.toFixed(1);
+    document.getElementById('gpaRemark').textContent       = getRemark(gpa);
+    document.getElementById('gpaResult').style.display     = 'block';
+    document.getElementById('gpaResult').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/* ── CGPA: semester blocks ── */
+function addSemester() {
+    semCount++;
+    const block = document.createElement('div');
+    block.className = 'semester-block';
+    block.dataset.semId = semCount;
+    block.innerHTML = `
+        <div class="semester-block-header">
+            <h3>📘 Semester ${semCount}</h3>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span class="semester-gpa-pill" id="semGpaPill${semCount}">GPA: 0.00</span>
+                <button class="remove-semester-btn" onclick="this.closest('.semester-block').remove()">Remove</button>
+            </div>
+        </div>
+        <div class="course-table" style="margin-bottom:0;">
+            <div class="table-header">
+                <span>Course</span><span>Units</span><span>Grade</span><span>Points</span><span></span>
+            </div>
+            <div id="semRows${semCount}"></div>
+        </div>
+        <button class="add-row-btn" onclick="addSemesterRow(${semCount})">+ Add Course</button>
+    `;
+    document.getElementById('semesterList').appendChild(block);
+
+    for (let i = 0; i < 2; i++) addSemesterRow(semCount);
+}
+
+function addSemesterRow(semId) {
+    buildCourseRow(`semRows${semId}`, semId);
+}
+
+function calculateCGPA() {
+    const blocks = document.querySelectorAll('.semester-block');
+    let grandUnits = 0, grandPoints = 0;
+
+    blocks.forEach(block => {
+        const semId = block.dataset.semId;
+        const rows  = block.querySelectorAll(`#semRows${semId} .course-row`);
+        let semUnits = 0, semPoints = 0;
+
+        rows.forEach(row => {
+            const units = parseFloat(row.querySelector('.course-units-input').value) || 0;
+            const grade = row.querySelector('.course-grade-input').value;
+            const point = GRADE_POINTS[grade] ?? 0;
+            semUnits  += units;
+            semPoints += units * point;
+        });
+
+        const semGpa = semUnits > 0 ? (semPoints / semUnits) : 0;
+        const pill = document.getElementById(`semGpaPill${semId}`);
+        if (pill) pill.textContent = `GPA: ${semGpa.toFixed(2)}`;
+
+        grandUnits  += semUnits;
+        grandPoints += semPoints;
+    });
+
+    const cgpa = grandUnits > 0 ? (grandPoints / grandUnits) : 0;
+
+    document.getElementById('cgpaValue').textContent      = cgpa.toFixed(2);
+    document.getElementById('cgpaTotalUnits').textContent  = grandUnits;
+    document.getElementById('cgpaTotalPoints').textContent = grandPoints.toFixed(1);
+    document.getElementById('cgpaSemCount').textContent    = blocks.length;
+    document.getElementById('cgpaRemark').textContent      = getRemark(cgpa);
+    document.getElementById('cgpaResult').style.display    = 'block';
+    document.getElementById('cgpaResult').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function getRemark(value) {
+    if (value >= 4.5) return "🏆 First Class — Outstanding!";
+    if (value >= 3.5) return "🌟 Second Class Upper — Great work!";
+    if (value >= 2.4) return "👍 Second Class Lower — Keep pushing!";
+    if (value >= 1.5) return "📘 Third Class — Room to grow.";
+    if (value >= 1.0) return "📗 Pass — Keep studying!";
+    return "📕 Below average — Don't give up!";
+}
+
+/* Add 1 semester by default in CGPA mode */
+addSemester();
+</script>
+{% endblock %}

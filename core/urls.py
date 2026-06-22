@@ -105,5 +105,6 @@ urlpatterns = [
         name='drop_course'
     ),
     path('lesson/<int:lesson_id>/save-position/', views.save_video_position, name='save_video_position'),
-path('course/<int:course_id>/lesson/<int:lesson_id>/complete/', views.mark_lesson_complete, name='mark_lesson_complete'),
+    path('course/<int:course_id>/lesson/<int:lesson_id>/complete/', views.mark_lesson_complete, name='mark_lesson_complete'),
+    path('gpa-calculator/', views.gpa_calculator, name='gpa_calculator'),
 ]

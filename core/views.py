@@ -127,7 +127,6 @@ def course_detail(request, pk):
 # =========================
 # ENROLLMENT
 # =========================
-
 @login_required
 def enroll_course(request, course_id):
     StudentProfile.objects.get_or_create(user=request.user)
@@ -139,10 +138,10 @@ def enroll_course(request, course_id):
         enrollment.progress = 0
         enrollment.completed = False
         enrollment.save()
-        messages.success(request, "Successfully enrolled in this course!")
+        messages.success(request, f"Successfully enrolled in {course.code}!")
     else:
         messages.info(request, "You are already enrolled in this course.")
-    return redirect("course_detail", pk=course.id)
+    return redirect("my_courses")
 
 
 # =========================
@@ -778,3 +777,7 @@ def push_unsubscribe(request):
         return JsonResponse({"status": "unsubscribed"})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+@login_required
+def gpa_calculator(request):
+    return render(request, "dashboard/gpa_calculator.html")
